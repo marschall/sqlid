@@ -13,7 +13,7 @@ public final class SqlId {
    */
   private static final int RESULT_SIZE = 13;
 
-  private static final char[] ALPHABET = new char[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+  private static final byte[] ALPHABET = new byte[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
   private SqlId() {
     throw new AssertionError("not instantiable");
@@ -88,7 +88,7 @@ public final class SqlId {
     if ((i < 0) || (i > 32)) {
       throw new IllegalArgumentException();
     }
-    return (byte) ALPHABET[i];
+    return ALPHABET[i];
 //    if (i < 10) {
 //      return (byte) ('0' + i);
 //    } else {
