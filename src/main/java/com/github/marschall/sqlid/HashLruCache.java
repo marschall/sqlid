@@ -38,11 +38,22 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
 
   @Override
   public V get(K key, Function<K, V> loader) {
+    this.lock.lock();
+    try {
+      return this.getLocked(key, loader);
+    } finally {
+      this.lock.unlock();
+    }
+  }
+  private V getLocked(K key, Function<K, V> loader) {
 
     Node<K, V> node = this.values.get(key);
     int currentSize = this.values.size();
     if (node != null) {
-      if (currentSize > 1) {
+      // the value is in the cache
+      if ((currentSize > 1) && (node != this.mostRecentlyUsed)) {
+        // only update if there is more than 1 item in the cache
+        // and the node isn't already the most recently used one
         if (node.previous != null) {
           node.previous.next = node.next;
         }
@@ -53,11 +64,13 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
           this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
         }
         node.previous = null;
+        node.next = this.mostRecentlyUsed;
         this.mostRecentlyUsed = node;
       }
       return node.value;
     } else {
-      V value = loader.apply(key);
+      // the value is not in the cache
+      V value = loader.apply(key); // this could be done outside the lock
       Node<K, V> newNode = new Node<>(key, value);
       if (currentSize == 0) {
         this.leastRecentlyUsed = newNode;
@@ -66,10 +79,16 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
       }
       newNode.next = this.mostRecentlyUsed;
       this.mostRecentlyUsed = newNode;
-      if (currentSize < this.capacity) {
-
-      } else {
-
+      this.values.put(key, newNode);
+      if (currentSize == this.capacity) {
+        // the least recently used node has to be removed
+        this.values.remove(this.leastRecentlyUsed.key);
+        if (this.capacity > 1) {
+          this.leastRecentlyUsed.next = null;
+          this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
+        } else {
+          this.leastRecentlyUsed = newNode;
+        }
       }
       return value;
     }
@@ -88,6 +107,11 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
     Node(NK key, NV value) {
       this.key = key;
       this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return this.key + "=" + this.value;
     }
 
   }
