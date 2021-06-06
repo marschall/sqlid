@@ -36,7 +36,7 @@ public final class SqlId {
    * @param nativeSql SQL string without trailing 0x00 byte
    * @return sql_id as computed by Oracle
    */
-  static String SQL_ID(String nativeSql) {
+  public static String SQL_ID(String nativeSql) {
     // compute MD5 sum from SQL string - including trailing 0x00 Byte
     byte[] message = nativeSql.getBytes(StandardCharsets.UTF_8);
     MessageDigest md;
