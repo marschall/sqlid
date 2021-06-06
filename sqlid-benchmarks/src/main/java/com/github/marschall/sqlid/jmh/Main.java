@@ -13,10 +13,14 @@ public class Main {
   public static void main(String[] args) throws RunnerException, IOException {
     String fileName = "jmh-result.txt";
     Options options = new OptionsBuilder()
+//            .include("com\\.github\\.marschall\\.sqlid\\.jmh\\.CacheBenchmarks")
             .include("com\\.github\\.marschall\\.sqlid\\.jmh\\..*Benchmarks")
             .forks(1)
             .warmupIterations(3)
             .measurementIterations(5)
+//            .warmupIterations(2)
+//            .measurementIterations(3)
+//            .threads(3)
             .resultFormat(ResultFormatType.TEXT)
             .output(fileName)
             .addProfiler("gc")

@@ -16,8 +16,6 @@ import java.util.function.Function;
  */
 public final class HashLruCache<K, V> implements Cache<K, V> {
 
-  // TODO bench agains org.springframework.util.ConcurrentLruCache<K, V>
-
   private final int capacity;
 
   private final Map<K, Node<K, V>> values;
