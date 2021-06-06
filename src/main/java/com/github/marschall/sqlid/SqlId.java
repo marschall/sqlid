@@ -9,11 +9,20 @@ import java.security.NoSuchAlgorithmException;
 public final class SqlId {
 
   /**
-   * Max sql_id length is 13 chars.
+   * sql_id length is 13 chars.
    */
-  private static final int RESULT_SIZE = 13;
+  private static final int SQL_ID_SIZE = 13;
 
-  private static final byte[] ALPHABET = new byte[] {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+  /**
+   * Base32 alphabet, seems to be a custom variant.
+   */
+  private static final byte[] BASE32_ALPHABET = new byte[] {
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      'a', 'b', 'c',  'd', // e missing
+      'f', 'g', 'h', // i missing
+      'j', 'k', // l missing
+      'm', 'n', // o missing
+      'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
   private SqlId() {
     throw new AssertionError("not instantiable");
@@ -24,12 +33,12 @@ public final class SqlId {
    * http://www.slaviks-blog.com/2010/03/30/oracle-sql_id-and-hash-value/
    * https://blog.tanelpoder.com/2009/02/22/sql_id-is-just-a-fancy-representation-of-hash-value/
    *
-   * @param stmt SQL string without trailing 0x00 Byte
+   * @param nativeSql SQL string without trailing 0x00 byte
    * @return sql_id as computed by Oracle
    */
-  static String SQL_ID(String stmt) {
+  static String SQL_ID(String nativeSql) {
     // compute MD5 sum from SQL string - including trailing 0x00 Byte
-    byte[] message = stmt.getBytes(StandardCharsets.UTF_8);
+    byte[] message = nativeSql.getBytes(StandardCharsets.UTF_8);
     MessageDigest md;
     try {
       md = MessageDigest.getInstance("MD5");
@@ -58,6 +67,7 @@ public final class SqlId {
             | ((b[10] & 0xFFl) << 48)
             | ((b[9] & 0xFFl) << 40)
             | ((b[8] & 0xFFl) << 32)
+
             | ((b[15] & 0xFFl) << 24)
             | ((b[14] & 0xFFl) << 16)
             | ((b[13] & 0xFFl) << 8)
@@ -67,7 +77,7 @@ public final class SqlId {
   private static String toBase32String(long l) {
     // Compute Base32, take 13x 5bits
     // max sql_id length is 13 chars, 13 x 5 => 65bits most significant is always 0
-    byte[] result = new byte[RESULT_SIZE];
+    byte[] result = new byte[SQL_ID_SIZE];
     result[0] = toBase32((int) ((l & (0b11111L << 60)) >>> 60));
     result[1] = toBase32((int) ((l & (0b11111L << 55)) >>> 55));
     result[2] = toBase32((int) ((l & (0b11111L << 50)) >>> 50));
@@ -88,20 +98,7 @@ public final class SqlId {
     if ((i < 0) || (i > 32)) {
       throw new IllegalArgumentException();
     }
-    return ALPHABET[i];
-//    if (i < 10) {
-//      return (byte) ('0' + i);
-//    } else {
-//      return (byte) ('a' + (i - 9));
-//    }
-  }
-
-  public static void main(String[] args) {
-    System.out.println(0x100);
-    System.out.println(ALPHABET.length);
-    System.out.println(Integer.toHexString(31));
-    System.out.println(Integer.toBinaryString(31));
-    System.out.println(1 << 8);
+    return BASE32_ALPHABET[i];
   }
 
 }
