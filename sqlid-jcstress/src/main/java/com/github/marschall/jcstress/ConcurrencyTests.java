@@ -28,29 +28,55 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.github.marschall;
+package com.github.marschall.jcstress;
+
+import static org.openjdk.jcstress.annotations.Expect.ACCEPTABLE;
 
 import org.openjdk.jcstress.annotations.Actor;
-import org.openjdk.jcstress.annotations.Expect;
+import org.openjdk.jcstress.annotations.Arbiter;
 import org.openjdk.jcstress.annotations.JCStressTest;
 import org.openjdk.jcstress.annotations.Outcome;
 import org.openjdk.jcstress.annotations.State;
-import org.openjdk.jcstress.infra.results.II_Result;
+import org.openjdk.jcstress.infra.results.LLL_Result;
+
+import com.github.marschall.sqlid.Cache;
+import com.github.marschall.sqlid.HashLruCache;
 
 
 @JCStressTest
-@Outcome(id = "0, 0", expect = Expect.ACCEPTABLE, desc = "Default outcome.")
+@Outcome(id = "ok1, ok2, nok3", expect = ACCEPTABLE, desc = "1 and 2 cached or 2 and 1 cached")
+@Outcome(id = "ok1, nok2, nok3", expect = ACCEPTABLE, desc = "1 and 3 cached or 3 and 1 cached")
+@Outcome(id = "nok1, ok2, nok3", expect = ACCEPTABLE, desc = "2 and 3 cached")
+@Outcome(id = "nok1, nok2, nok3", expect = ACCEPTABLE, desc = "3 and 2 cached")
 @State
-public class ConcurrencyTest {
+public class ConcurrencyTests {
 
-  @Actor
-  public void actor1(II_Result r) {
-    // Put the code for first thread here
+  private final Cache<String, String> cache;
+
+  public ConcurrencyTests() {
+    this.cache = new HashLruCache<>(2);
   }
 
   @Actor
-  public void actor2(II_Result r) {
-    // Put the code for second thread here
+  public void actor1() {
+    this.cache.get("1", key -> "ok1");
+  }
+
+  @Actor
+  public void actor2() {
+    this.cache.get("2", key -> "ok2");
+  }
+
+  @Actor
+  public void actor3() {
+    this.cache.get("3", key -> "ok3");
+  }
+
+  @Arbiter
+  public void arbiter(LLL_Result r) {
+    r.r1 = this.cache.get("1", key -> "nok1");
+    r.r2 = this.cache.get("2", key -> "nok2");
+    r.r3 = this.cache.get("3", key -> "nok3");
   }
 
 }

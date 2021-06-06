@@ -17,6 +17,11 @@
       <artifactId>jcstress-core</artifactId>
       <version>${jcstress.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sqlid</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
