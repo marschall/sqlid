@@ -2,6 +2,7 @@ package com.github.marschall.sqlid;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
@@ -38,6 +39,8 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
 
   @Override
   public V get(K key, Function<K, V> loader) {
+    Objects.requireNonNull(key, "key");
+    Objects.requireNonNull(loader, "loader");
     this.lock.lock();
     try {
       return this.getLocked(key, loader);
@@ -65,40 +68,48 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
         }
         node.previous = null;
         node.next = this.mostRecentlyUsed;
+        if (node.next != null) {
+          node.next.previous = node;
+        }
         this.mostRecentlyUsed = node;
       }
       return node.value;
     } else {
       // the value is not in the cache
       V value = loader.apply(key); // this could be done outside the lock
-      Node<K, V> newNode = new Node<>(key, value);
-      if (currentSize == 0) {
+      Objects.requireNonNull(value, "value");
+      Node<K, V> newNode;
+      if (currentSize == this.capacity) {
+        // the least recently used node has to be removed
+        newNode = this.values.remove(this.leastRecentlyUsed.key);
+        newNode.key = key;
+        newNode.value = value;
+        if (this.capacity > 1) {
+          this.leastRecentlyUsed.previous.next = null;
+          this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
+        }
+        newNode.previous = null;
+      } else {
+        // just add the new node
+        newNode = new Node<>(key, value);
+      }
+      if ((currentSize == 0) || (this.capacity == 1)) {
         this.leastRecentlyUsed = newNode;
       } else {
-        this.mostRecentlyUsed.previous = node;
+        this.mostRecentlyUsed.previous = newNode;
       }
       newNode.next = this.mostRecentlyUsed;
       this.mostRecentlyUsed = newNode;
       this.values.put(key, newNode);
-      if (currentSize == this.capacity) {
-        // the least recently used node has to be removed
-        this.values.remove(this.leastRecentlyUsed.key);
-        if (this.capacity > 1) {
-          this.leastRecentlyUsed.next = null;
-          this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
-        } else {
-          this.leastRecentlyUsed = newNode;
-        }
-      }
       return value;
     }
   }
 
   static final class Node<NK, NV> {
 
-    final NK key;
+    NK key;
 
-    final NV value;
+    NV value;
 
     Node<NK, NV> previous;
 
