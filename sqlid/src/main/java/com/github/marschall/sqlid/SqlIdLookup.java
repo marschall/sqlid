@@ -46,11 +46,11 @@ public final class SqlIdLookup {
     try (Connection connection = this.dataSource.getConnection()) {
       nativeSql = connection.nativeSQL(jdbcQueryString);
     }
-    return SqlId.computeSqlId(nativeSql);
+    return SqlId.compute(nativeSql);
   }
 
   public String getSqlIdOfNativeString(String nativeSql) {
-    return this.cache.get(nativeSql, SqlId::computeSqlId);
+    return this.cache.get(nativeSql, SqlId::compute);
   }
 
 }

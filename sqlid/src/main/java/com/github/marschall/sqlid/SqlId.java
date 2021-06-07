@@ -5,17 +5,26 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.util.Objects;
 
+import oracle.jdbc.OracleDatabaseException;
+
+/**
+ * Computes Oracle sql_id of SQL statement.
+ *
+ * @see <a href="https://tanelpoder.com/2009/02/22/sql_id-is-just-a-fancy-representation-of-hash-value/">SQL_ID is just a fancy representation of hash value</a>
+ * @see <a href="https://web.archive.org/web/20170510061149/http://www.slaviks-blog.com/2010/03/30/oracle-sql_id-and-hash-value/">Oracle sql_id and hash value</a>
+ */
 public final class SqlId {
 
   /**
-   * sql_id length is 13 chars.
+   * The sql_id length is 13 chars.
    */
   private static final int SQL_ID_SIZE = 13;
 
   /**
-   * Base32 alphabet, seems to be a custom variant.
+   * The base32 alphabet used for sql_id, it seems to be a custom variant.
    */
   private static final byte[] BASE32_ALPHABET = new byte[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -30,16 +39,16 @@ public final class SqlId {
   }
 
   /**
-   * Computes Oracle sql_id for a native SQL statement.
-   * http://www.slaviks-blog.com/2010/03/30/oracle-sql_id-and-hash-value/
-   * https://blog.tanelpoder.com/2009/02/22/sql_id-is-just-a-fancy-representation-of-hash-value/
+   * Computes Oracle sql_id of a native SQL statement.
    *
    * @param nativeSql SQL string without trailing 0x00 byte, not {@code null}
    * @return sql_id as computed by Oracle
+   * @see Connection#nativeSQL(String)
+   * @see OracleDatabaseException#getSql()
    */
-  public static String computeSqlId(String nativeSql) {
+  public static String compute(String nativeSql) {
     Objects.requireNonNull(nativeSql, "nativeSql");
-    // compute MD5 sum from SQL string - including trailing 0x00 Byte
+    // compute the MD5 hash of the SQL
     byte[] message = nativeSql.getBytes(StandardCharsets.UTF_8);
     MessageDigest md;
     try {
