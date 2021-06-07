@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public final class SqlId {
 
@@ -29,14 +30,15 @@ public final class SqlId {
   }
 
   /**
-   * Compute sqlid for a statement, the same way as Oracle does
+   * Computes Oracle sql_id for a native SQL statement.
    * http://www.slaviks-blog.com/2010/03/30/oracle-sql_id-and-hash-value/
    * https://blog.tanelpoder.com/2009/02/22/sql_id-is-just-a-fancy-representation-of-hash-value/
    *
-   * @param nativeSql SQL string without trailing 0x00 byte
+   * @param nativeSql SQL string without trailing 0x00 byte, not {@code null}
    * @return sql_id as computed by Oracle
    */
-  public static String SQL_ID(String nativeSql) {
+  public static String computeSqlId(String nativeSql) {
+    Objects.requireNonNull(nativeSql, "nativeSql");
     // compute MD5 sum from SQL string - including trailing 0x00 Byte
     byte[] message = nativeSql.getBytes(StandardCharsets.UTF_8);
     MessageDigest md;

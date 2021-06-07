@@ -12,16 +12,28 @@ import oracle.jdbc.OracleDatabaseException;
 public final class SqlIdLookup {
 
   private final DataSource dataSource;
+  private final Cache<String, String> cache;
 
-  public SqlIdLookup(DataSource dataSource) {
+  public SqlIdLookup(DataSource dataSource, Cache<String, String> cache) {
     Objects.requireNonNull(dataSource, "dataSource");
+    Objects.requireNonNull(cache, "cache");
     this.dataSource = dataSource;
+    this.cache = cache;
   }
 
-  public Optional<String> getSqlId(SQLException sqlException) {
+  public SqlIdLookup(DataSource dataSource, int cacheCapacity) {
+    if (cacheCapacity < 0) {
+      throw new IllegalArgumentException("cache capacity must be positive but was: " + cacheCapacity);
+    }
+    this.dataSource = dataSource;
+    this.cache = new HashLruCache<>(cacheCapacity);
+  }
+
+  public Optional<String> getSqlIdOfException(SQLException sqlException) {
     Throwable cause = sqlException.getCause();
     if (cause instanceof OracleDatabaseException) {
-      String originalSql = ((OracleDatabaseException) cause).getOriginalSql();
+      // #getOriginalSql() returns the JDBC string
+      String originalSql = ((OracleDatabaseException) cause).getSql();
       return Optional.of(this.getSqlIdOfNativeString(originalSql));
     } else {
       return Optional.empty();
@@ -29,15 +41,16 @@ public final class SqlIdLookup {
   }
 
   public String getSqlIdOfJdbcString(String jdbcQueryString) throws SQLException {
+    // TODO cache
     String nativeSql;
     try (Connection connection = this.dataSource.getConnection()) {
       nativeSql = connection.nativeSQL(jdbcQueryString);
     }
-    return this.getSqlIdOfNativeString(nativeSql);
+    return SqlId.computeSqlId(nativeSql);
   }
 
   public String getSqlIdOfNativeString(String nativeSql) {
-    return SqlId.SQL_ID(nativeSql);
+    return this.cache.get(nativeSql, SqlId::computeSqlId);
   }
 
 }

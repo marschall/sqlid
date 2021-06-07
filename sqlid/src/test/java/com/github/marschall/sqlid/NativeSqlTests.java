@@ -1,21 +1,13 @@
 package com.github.marschall.sqlid;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 import java.sql.Connection;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestConstructor;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-@SpringJUnitConfig
-@ContextConfiguration(classes = OracleConfiguration.class)
-@TestConstructor(autowireMode = ALL)
-class NativeSqlTests {
-
+class NativeSqlTests extends AbstractOracleTests {
 
   private final JdbcTemplate jdbcTemplate;
 
