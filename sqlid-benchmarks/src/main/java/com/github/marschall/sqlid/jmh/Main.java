@@ -11,16 +11,14 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class Main {
 
   public static void main(String[] args) throws RunnerException, IOException {
-    String fileName = "jmh-result.txt";
+    int threads = args.length > 0 ? Integer.parseInt(args[0]) : 1;
+    String fileName = "jmh-result-threads-" + threads  + ".txt";
     Options options = new OptionsBuilder()
-//            .include("com\\.github\\.marschall\\.sqlid\\.jmh\\.CacheBenchmarks")
             .include("com\\.github\\.marschall\\.sqlid\\.jmh\\..*Benchmarks")
             .forks(1)
             .warmupIterations(3)
             .measurementIterations(5)
-//            .warmupIterations(2)
-//            .measurementIterations(3)
-//            .threads(3)
+            .threads(threads)
             .resultFormat(ResultFormatType.TEXT)
             .output(fileName)
             .addProfiler("gc")

@@ -20,7 +20,7 @@ public class SqlIdBenchmarks {
 
   @Benchmark
   public String project() {
-    return SqlId.SQL_ID("SELECT * from dual where dummy = :1 ");
+    return SqlId.computeSqlId("SELECT * from dual where dummy = :1 ");
   }
 
 }
