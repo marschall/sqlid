@@ -40,67 +40,86 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
     Objects.requireNonNull(key, "key");
     Objects.requireNonNull(loader, "loader");
     this.lock.lock();
-    try {
-      return this.getLocked(key, loader);
-    } finally {
-      this.lock.unlock();
-    }
-  }
-  private V getLocked(K key, Function<K, V> loader) {
+      Node<K, V> node = this.values.get(key);
+      int currentSize = this.values.size();
+      if (node != null) {
+        V value = this.updateLru(node, currentSize);
+        this.lock.unlock();
+        return value;
+      } else {
+        // recompute the value outside of the lock
+        // recomputing the value is likely expensive, otherwise we would not need a cache
+        // allow other reads while recomputing
+        this.lock.unlock();
+        // the value is not in the cache
+        V value = loader.apply(key); // this could be done outside the lock
+        Objects.requireNonNull(value, "value");
 
-    Node<K, V> node = this.values.get(key);
-    int currentSize = this.values.size();
-    if (node != null) {
-      // the value is in the cache
-      if ((currentSize > 1) && (node != this.mostRecentlyUsed)) {
-        // only update if there is more than 1 item in the cache
-        // and the node isn't already the most recently used one
-        if (node.previous != null) {
-          node.previous.next = node.next;
-        }
-        if (node.next != null) {
-          node.next.previous = node.previous;
-        }
-        if (node == this.leastRecentlyUsed) {
-          this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
-        }
-        node.previous = null;
-        node.next = this.mostRecentlyUsed;
-        if (node.next != null) {
-          node.next.previous = node;
-        }
-        this.mostRecentlyUsed = node;
+        // acquire lock again
+        this.lock.lock();
+        this.addNewValue(key, value);
+        this.lock.unlock();
+        return value;
       }
-      return node.value;
-    } else {
-      // the value is not in the cache
-      V value = loader.apply(key); // this could be done outside the lock
-      Objects.requireNonNull(value, "value");
-      Node<K, V> newNode;
-      if (currentSize == this.capacity) {
-        // the least recently used node has to be removed
-        newNode = this.values.remove(this.leastRecentlyUsed.key);
-        newNode.key = key;
-        newNode.value = value;
-        if (this.capacity > 1) {
-          this.leastRecentlyUsed.previous.next = null;
-          this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
-        }
-        newNode.previous = null;
-      } else {
-        // just add the new node
-        newNode = new Node<>(key, value);
+  }
+
+  private V updateLru(Node<K, V> node, int currentSize) {
+    // the value is in the cache
+    if ((currentSize > 1) && (node != this.mostRecentlyUsed)) {
+      // only update if there is more than 1 item in the cache
+      // and the node isn't already the most recently used one
+      if (node.previous != null) {
+        node.previous.next = node.next;
       }
-      if ((currentSize == 0) || (this.capacity == 1)) {
-        this.leastRecentlyUsed = newNode;
-      } else {
-        this.mostRecentlyUsed.previous = newNode;
+      if (node.next != null) {
+        node.next.previous = node.previous;
       }
-      newNode.next = this.mostRecentlyUsed;
-      this.mostRecentlyUsed = newNode;
-      this.values.put(key, newNode);
-      return value;
+      if (node == this.leastRecentlyUsed) {
+        this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
+      }
+      node.previous = null;
+      node.next = this.mostRecentlyUsed;
+      if (node.next != null) {
+        node.next.previous = node;
+      }
+      this.mostRecentlyUsed = node;
     }
+    return node.value;
+  }
+
+  private void addNewValue(K key, V value) {
+    // because we computed the value outside the lock the value may now be in the cache
+    Node<K, V> readBack = this.values.get(key);
+    int currentSize = this.values.size();
+    if (readBack != null) {
+      this.updateLru(readBack, currentSize);
+      // FIXME identity
+      return;
+    }
+
+    Node<K, V> newNode;
+    if (currentSize == this.capacity) {
+      // the least recently used node has to be removed
+      newNode = this.values.remove(this.leastRecentlyUsed.key);
+      newNode.key = key;
+      newNode.value = value;
+      if (this.capacity > 1) {
+        this.leastRecentlyUsed.previous.next = null;
+        this.leastRecentlyUsed = this.leastRecentlyUsed.previous;
+      }
+      newNode.previous = null;
+    } else {
+      // just add the new node
+      newNode = new Node<>(key, value);
+    }
+    if ((currentSize == 0) || (this.capacity == 1)) {
+      this.leastRecentlyUsed = newNode;
+    } else {
+      this.mostRecentlyUsed.previous = newNode;
+    }
+    newNode.next = this.mostRecentlyUsed;
+    this.mostRecentlyUsed = newNode;
+    this.values.put(key, newNode);
   }
 
   static final class Node<NK, NV> {
