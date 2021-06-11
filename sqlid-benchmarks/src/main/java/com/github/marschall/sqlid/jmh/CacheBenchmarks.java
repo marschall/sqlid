@@ -3,7 +3,6 @@ package com.github.marschall.sqlid.jmh;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.openjdk.jmh.annotations.Mode.Throughput;
 
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -15,9 +14,9 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.infra.Blackhole;
 import org.springframework.util.ConcurrentLruCache;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.marschall.sqlid.Cache;
 import com.github.marschall.sqlid.HashLruCache;
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 @BenchmarkMode(Throughput)
 @OutputTimeUnit(MILLISECONDS)
@@ -33,23 +32,23 @@ public class CacheBenchmarks {
 
   private Cache<Integer, Integer> projectCache;
 
-  private ConcurrentMap<Integer, Integer> caffeineMap;
+  private com.github.benmanes.caffeine.cache.Cache<Integer, Integer> caffeineCache;
 
   @Setup
   public void doSetup() {
     this.springCache = new ConcurrentLruCache<>(CAPACITY, Function.identity());
     this.projectCache = new HashLruCache<>(CAPACITY);
-    this.caffeineMap = new ConcurrentLinkedHashMap.Builder<Integer, Integer>()
+    this.caffeineCache = Caffeine.newBuilder()
             .initialCapacity(CAPACITY)
-            .maximumWeightedCapacity(CAPACITY)
-            .build();
+            .maximumSize(CAPACITY)
+            .build();;
 
     // preload the caches
     for (int i = 0; i < CAPACITY; i++) {
       Integer key = i;
       this.springCache.get(key);
       this.projectCache.get(key, Function.identity());
-      this.caffeineMap.put(key, key);
+      this.caffeineCache.put(key, key);
     }
   }
 
@@ -66,7 +65,7 @@ public class CacheBenchmarks {
   public void getInCapacityCaffeine(Blackhole blackhole) {
     for (int i = 0; i < CAPACITY; i++) {
       for (int j = 0; j < i; j++) {
-        blackhole.consume(this.caffeineMap.get(i));
+        blackhole.consume(this.caffeineCache.get(i, Function.identity()));
       }
     }
   }
@@ -90,7 +89,7 @@ public class CacheBenchmarks {
   @Benchmark
   public void gettOutOfCapacityCaffeine(Blackhole blackhole) {
     for (int i = 0; i < (CAPACITY + 1); i++) {
-      blackhole.consume(this.caffeineMap.get(i));
+      blackhole.consume(this.caffeineCache.get(i, Function.identity()));
     }
   }
 
