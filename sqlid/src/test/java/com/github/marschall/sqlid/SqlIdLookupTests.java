@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +16,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class SqlIdLookupTests extends AbstractOracleTests {
 
@@ -30,8 +33,7 @@ class SqlIdLookupTests extends AbstractOracleTests {
     String sqlId1 = this.lookup.getSqlIdOfJdbcString("SELECT * from dual where dummy = ?");
     assertEquals("71hmmykrsa7wp", sqlId1);
     String sqlId2 = this.lookup.getSqlIdOfJdbcString("SELECT * from dual where dummy = ?");
-    // FIXME caching is missing
-//    assertSame(sqlId1, sqlId2);
+    assertSame(sqlId1, sqlId2);
 
     assertEquals("a5ks9fhw2v9s1", this.lookup.getSqlIdOfJdbcString("select * from dual"));
   }
@@ -56,6 +58,22 @@ class SqlIdLookupTests extends AbstractOracleTests {
       assertTrue(maybeSqlId.isPresent());
       assertEquals("71hmmykrsa7wp", maybeSqlId.get());
     }
+  }
+
+  @Test
+  void throwException() throws SQLException {
+
+    DataSource throwingDataSource = mock(DataSource.class);
+    Connection connection = mock(Connection.class);
+    when(throwingDataSource.getConnection()).thenReturn(connection);
+
+    SQLException expectedException = new SQLException("nativeSQL not available");
+    when(connection.nativeSQL(Mockito.anyString())).thenThrow(expectedException);
+
+    SqlIdLookup throwingLookup = new SqlIdLookup(throwingDataSource, 1);
+    SQLException actualException = assertThrows(SQLException.class, () -> throwingLookup.getSqlIdOfJdbcString("SELECT * from dual where dummy = ?"));
+
+    assertSame(expectedException, actualException);
   }
 
 }

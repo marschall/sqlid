@@ -41,16 +41,38 @@ public final class SqlIdLookup {
   }
 
   public String getSqlIdOfJdbcString(String jdbcQueryString) throws SQLException {
-    // TODO cache
-    String nativeSql;
-    try (Connection connection = this.dataSource.getConnection()) {
-      nativeSql = connection.nativeSQL(jdbcQueryString);
+    try {
+      return this.cache.get(jdbcQueryString, sql -> {
+        String nativeSql;
+        try (Connection connection = this.dataSource.getConnection()) {
+          nativeSql = connection.nativeSQL(sql);
+        } catch (SQLException e) {
+          // convert checked to unchecked
+          throw new UncheckedSQLException(e);
+        }
+        return SqlId.compute(nativeSql);
+      });
+    } catch (UncheckedSQLException e) {
+      // convert unchecked to unchecked
+      throw e.getCause();
     }
-    return SqlId.compute(nativeSql);
   }
 
   public String getSqlIdOfNativeString(String nativeSql) {
     return this.cache.get(nativeSql, SqlId::compute);
+  }
+
+  static final class UncheckedSQLException extends RuntimeException {
+
+    UncheckedSQLException(SQLException cause) {
+      super(cause);
+    }
+
+    @Override
+    public synchronized SQLException getCause() {
+      return (SQLException) super.getCause();
+    }
+
   }
 
 }

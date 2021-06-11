@@ -18,11 +18,16 @@ class NativeSqlTests extends AbstractOracleTests {
   @Test
   void nativeSql() {
     String sql = "SELECT * from dual where dummy = ?";
-    String nativeSQL = this.jdbcTemplate.execute((Connection connection) -> {
+    String nativeSql = this.jdbcTemplate.execute((Connection connection) -> {
       return connection.nativeSQL(sql);
     });
-    assertEquals("SELECT * from dual where dummy = :1 ", nativeSQL);
+
+
+    assertEquals("SELECT * from dual where dummy = :1 ", nativeSql);
+    assertEquals(nativeSql, nativeSql);
     assertEquals("X", this.jdbcTemplate.queryForObject(sql, String.class, "X"));
+    String sqlText = this.jdbcTemplate.queryForObject("SELECT sql_text FROM v$sqltext WHERE sql_id = ?", String.class, "71hmmykrsa7wp");
+    assertEquals(nativeSql, sqlText);
   }
 
 }
