@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.jdbc.UncategorizedSQLException;
+import org.springframework.util.ConcurrentLruCache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 
@@ -46,8 +48,8 @@ class SqlIdLookupDifferentCacheTests {
 
   static List<Cache<String, String>> caches() {
     com.github.benmanes.caffeine.cache.Cache<String, String> caffeine = Caffeine.newBuilder()
-      .maximumSize(16)
-      .build();
+        .maximumSize(16)
+        .build();
     Cache<String, String> caffeineCache = (key, loader) -> caffeine.get(key, k -> loader.apply(k));
     return List.of(caffeineCache);
   }
@@ -58,6 +60,22 @@ class SqlIdLookupDifferentCacheTests {
     SqlIdLookup lookup = new SqlIdLookup(this.dataSource, cache);
     String sqlId1 = lookup.getSqlIdOfJdbcString(JDBC_QUERY);
     String sqlId2 = lookup.getSqlIdOfJdbcString(JDBC_QUERY);
+    assertEquals(sqlId1, sqlId2);
+    assertSame(sqlId1, sqlId2);
+  }
+
+  @Test
+  void springCache() throws SQLException {
+    SqlIdLookup lookup = new SqlIdLookup(this.dataSource, (key, loader) -> loader.apply(key));
+    ConcurrentLruCache<String, String> springCache = new ConcurrentLruCache<>(2, sql -> {
+      try {
+        return lookup.getSqlIdOfJdbcString(sql);
+      } catch (SQLException e) {
+        throw new UncategorizedSQLException("could not lookup sql_id", sql, e);
+      }
+    });
+    String sqlId1 = springCache.get(JDBC_QUERY);
+    String sqlId2 = springCache.get(JDBC_QUERY);
     assertEquals(sqlId1, sqlId2);
     assertSame(sqlId1, sqlId2);
   }
