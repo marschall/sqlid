@@ -10,9 +10,13 @@ import java.util.function.Function;
 /**
  * A hash map and linked list based implementation of {@link Cache} that uses
  * the Least Recently Used (LRU) algorithm.
+ * 
+ * <h2>Implementation Notes</h2>
+ * Accessing the cache acquires an exclusive lock that is released during the
+ * computation of the value to be cached.
  *
- * @param <K>
- * @param <V>
+ * @param <K> the type of the lookup keys
+ * @param <V> the type of the cached values
  */
 public final class HashLruCache<K, V> implements Cache<K, V> {
 
@@ -26,6 +30,13 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
 
   private final Lock lock;
 
+  /**
+   * Constructs a {@link HashLruCache}.
+   * 
+   * @param capacity the desired maximum capacity of this cache,
+   *                 must be positive
+   * @throws IllegalArgumentException if {@code capacity} is not positive
+   */
   public HashLruCache(int capacity) {
     if (capacity <= 0) {
       throw new IllegalArgumentException("capacity must be positive");
