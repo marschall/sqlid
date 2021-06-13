@@ -9,6 +9,11 @@ import javax.sql.DataSource;
 
 import oracle.jdbc.OracleDatabaseException;
 
+/**
+ * Convenience class for computing the Oracle SQL_ID. Takes care of
+ * converting form JDBC query strings to native query strings and
+ * also performs caching.
+ */
 public final class SqlIdLookup {
 
   private final DataSource dataSource;

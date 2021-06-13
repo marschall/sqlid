@@ -99,16 +99,19 @@ public final class SqlId {
     return mostSignificantLong(b);
   }
 
-  private static int F(int x,int y,int z) {
+  private static int F(int x, int y, int z) {
     return (x & y) | ((~x) & z);
   }
-  private static int G(int x,int y,int z) {
+
+  private static int G(int x, int y, int z) {
     return (x & z) | (y & (~z));
   }
-  private static int H(int x,int y,int z) {
+
+  private static int H(int x, int y, int z) {
     return (x ^ y) ^ z;
   }
-  private static int I(int x,int y,int z) {
+
+  private static int I(int x, int y, int z) {
     return y ^ (x | (~z));
   }
 
@@ -138,6 +141,65 @@ public final class SqlId {
     a = Integer.rotateLeft(a, s);
     a += b;
     return a;
+  }
+
+  private static int fastWordAt(String s, int round, int index) {
+    int base = (round * 64) + (4 * index);
+    return s.charAt(base) << 24
+        | ((s.charAt(base + 1)) << 16)
+        | ((s.charAt(base + 2)) << 8)
+        | (s.charAt(base + 3));
+  }
+
+  private static int slowWordAt(String s, int round, int index) {
+    int base = (round * 64) + (4 * index);
+    int b1 = byteValueAt(s, base + 0);
+    int b2 = byteValueAt(s, base + 1);
+    int b3 = byteValueAt(s, base + 2);
+    int b4 = byteValueAt(s, base + 3);
+    return b1 << 24
+        | (b2 << 16)
+        | (b3 << 8)
+        | b4;
+  }
+
+  private static int byteValueAt(String s, int index) {
+    int inputLenght = s.length();
+    if (index < inputLenght) {
+      return s.charAt(index);
+    } else if (index == inputLenght) {
+      // a 0 is added at the end of the SQL string for the computation of the SQL_ID
+      return 0x00;
+    } else if (index == inputLenght + 1) {
+      // first padding byte
+      return 0x01;
+    }
+    // past the message and first pad byte
+
+    long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
+    boolean finalBlock;
+    if (finalBlock) {
+      int indexInChunck = index / 64;
+      if (indexInChunck >= 56) {
+        // length in bytes, little endian
+        int shift = (indexInChunck - 56) * 8;
+        return (int) ((messageLength & (0xFF << shift)) >>> shift);
+      } else {
+        // padding
+        // before the length
+        return 0x00;
+      }
+    } else {
+      // padding
+      // non-final block has no length
+      return 0x00;
+    }
+  }
+  
+  private static boolean needsAdditionalChunk(String s) {
+    // FIXME mask
+    int end = (s.length() + 1 /* 0x00 byte */ + 1 /* first pad byte */) % 64;
+    return end == 0 || end > 56;
   }
 
   private static long getHashAscii(String s) {
@@ -173,8 +235,8 @@ public final class SqlId {
           g = (7 * i) % 16;
         }
         // Be wary of the below definitions of a,b,c,d
-        // fixme 8 bytes
-        F = F + A + K[i] + s.charAt(g);  // M[g] must be a 32-bits block
+        // FIXME 8 bytes
+        F = F + A + K[i] + s.charAt(g); // M[g] must be a 32-bits block
         A = D;
         D = C;
         C = B;
