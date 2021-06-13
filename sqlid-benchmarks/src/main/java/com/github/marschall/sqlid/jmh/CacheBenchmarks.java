@@ -19,7 +19,7 @@ import com.github.marschall.sqlid.Cache;
 import com.github.marschall.sqlid.HashLruCache;
 
 /**
- * Micro-benchmarks for LRU caches with a minimal load function.
+ * Single-threaded micro-benchmarks for LRU caches with a minimal load function.
  */
 @BenchmarkMode(Throughput)
 @OutputTimeUnit(MILLISECONDS)
