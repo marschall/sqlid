@@ -59,8 +59,19 @@ final class MD5 {
     throw new AssertionError("not instantiable");
   }
 
-
   static long getBinarySqlId(String s) {
+    // compute the MD5 hash of the SQL
+    int utf8Length = getUtf8Length(s);
+    if (utf8Length == s.length()) {
+      return asciiMd5Hash(s);
+    } else {
+      return nonAsciiMd5Hash(s);
+    }
+    
+  }
+  
+  private static long nonAsciiMd5Hash(String s) {
+
     // compute the MD5 hash of the SQL
     // it's not clear whether the MD5 hash is computed based on UTF-8 or the database encoding
     byte[] message = s.getBytes(StandardCharsets.UTF_8);
@@ -284,25 +295,25 @@ final class MD5 {
    */
   private static int fastWordAt(String s, int index, int chunckIndex) {
     int base = (chunckIndex * 64) + (4 * index);
-    return (s.charAt(base) << 24)
-        | ((s.charAt(base + 1)) << 16)
-        | ((s.charAt(base + 2)) << 8)
-        | (s.charAt(base + 3));
+    return s.charAt(base)
+        | ((s.charAt(base + 1)) << 8)
+        | ((s.charAt(base + 2)) << 16)
+        | ((s.charAt(base + 3)) << 24);
   }
 
   /**
    * Slow access to a word in the input message, deals with padding.
    */
-  private static int slowWordAt(String s, int round, int index, boolean finalBlock) {
-    int base = (round * 64) + (4 * index);
+  private static int slowWordAt(String s, int index, int chunkIndex, boolean finalBlock) {
+    int base = (chunkIndex * 64) + (4 * index);
     int b1 = byteValueAt(s, base + 0, finalBlock);
     int b2 = byteValueAt(s, base + 1, finalBlock);
     int b3 = byteValueAt(s, base + 2, finalBlock);
     int b4 = byteValueAt(s, base + 3, finalBlock);
-    return (b1 << 24)
-        | (b2 << 16)
-        | (b3 << 8)
-        | b4;
+    return b1
+        | (b2 << 8)
+        | (b3 << 16)
+        | (b4 << 24);
   }
 
   private static int byteValueAt(String s, int index, boolean finalBlock) {
@@ -320,10 +331,9 @@ final class MD5 {
 
     long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
     if (finalBlock) {
-      int indexInChunck = index / 64;
-      if (indexInChunck >= 56) {
+      if (index >= 56) {
         // length in bytes, little endian
-        int shift = (indexInChunck - 56) * 8;
+        int shift = (index - 56) * 8;
         return (int) ((messageLength & (0xFF << shift)) >>> shift);
       } else {
         // padding
@@ -415,7 +425,7 @@ final class MD5 {
     return mostSignificantLong(b);
   }
 
-  private static long getUtf8Length(String s) {
+  private static int getUtf8Length(String s) {
     int length = 0;
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
