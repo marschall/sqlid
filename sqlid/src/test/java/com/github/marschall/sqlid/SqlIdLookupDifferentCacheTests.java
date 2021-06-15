@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -51,7 +52,7 @@ class SqlIdLookupDifferentCacheTests {
         .maximumSize(16)
         .build();
     Cache<String, String> caffeineCache = (key, loader) -> caffeine.get(key, k -> loader.apply(k));
-    return List.of(caffeineCache);
+    return Collections.singletonList(caffeineCache);
   }
 
   @ParameterizedTest
