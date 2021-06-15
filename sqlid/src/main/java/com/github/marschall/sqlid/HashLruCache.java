@@ -79,9 +79,8 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
     if ((currentSize > 1) && (node != this.mostRecentlyUsed)) {
       // only update if there is more than 1 item in the cache
       // and the node isn't already the most recently used one
-      if (node.previous != null) {
-        node.previous.next = node.next;
-      }
+      // per definition the previous node is set
+      node.previous.next = node.next;
       if (node.next != null) {
         node.next.previous = node.previous;
       }
