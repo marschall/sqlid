@@ -6,7 +6,7 @@ import java.util.Objects;
 import oracle.jdbc.OracleDatabaseException;
 
 /**
- * Computes Oracle sql_id of SQL statement.
+ * Computes Oracle sql_id of a SQL statement.
  *
  * @see <a href="https://tanelpoder.com/2009/02/22/sql_id-is-just-a-fancy-representation-of-hash-value/">SQL_ID is just a fancy representation of hash value</a>
  * @see <a href="https://web.archive.org/web/20170510061149/http://www.slaviks-blog.com/2010/03/30/oracle-sql_id-and-hash-value/">Oracle sql_id and hash value</a>

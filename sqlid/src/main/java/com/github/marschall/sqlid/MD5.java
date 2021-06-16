@@ -9,7 +9,9 @@ import java.security.NoSuchAlgorithmException;
  *
  * @see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC-1321</a>
  */
-final class MD5 {
+public final class MD5 {
+  
+  // FIXME reduce scope
 
 //s specifies the per-round shift amounts
   private static final byte[] S = {7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
@@ -70,21 +72,51 @@ final class MD5 {
     
   }
   
-  static long nonAsciiMd5Hash(String s) {
+  public static long nonAsciiMd5HashIncrementcal(String s, MessageDigest md) {
+    byte[] buffer = new byte[16];
+    int bufferIndex = 0;
+    int stringLength = s.length();
+    for (int i = 0; i < stringLength; i++) {
+      char c = s.charAt(i);
+      if (Character.isLowSurrogate(c)) {
+        if (i == stringLength - 1) {
+          throw new IllegalArgumentException("truncated input");
+        }
+        i += 1;
+        int codePoint = Character.toCodePoint(s.charAt(i), c);
+      }
+    }
+    return 0L;
+  }
+
+  public static void main(String[] args) {
+    String s = "\u1F600";
+    System.out.println(s);
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      System.out.println("" + i + ": " + Integer.toHexString(c));
+      System.out.println("#isLowSurrogate: " + Character.isLowSurrogate(c));
+      System.out.println("#isHighSurrogate: " + Character.isHighSurrogate(c));
+      System.out.println("#isSurrogate: " + Character.isSurrogate(c));
+      
+    }
+  }
+
+  public static long nonAsciiMd5Hash(String s) {
 
     // compute the MD5 hash of the SQL
     // it's not clear whether the MD5 hash is computed based on UTF-8 or the database encoding
     byte[] message = s.getBytes(StandardCharsets.UTF_8);
-    MessageDigest md;
+    MessageDigest messageDigest;
     try {
-      md = MessageDigest.getInstance("MD5");
+      messageDigest = MessageDigest.getInstance("MD5");
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException("MD5 not supported", e);
     }
-    md.update(message);
+    messageDigest.update(message);
     // append a trailing 0x00 byte
-    md.update((byte) 0x00);
-    byte[] b = md.digest();
+    messageDigest.update((byte) 0x00);
+    byte[] b = messageDigest.digest();
 
     // bytes 0 to 7 from the MD5 hash are not used, only the last 64bits are used
     // therefore we can use a 64bit long
@@ -93,7 +125,7 @@ final class MD5 {
     return mostSignificantLong(b);
   }
 
-  static long asciiMd5Hash(String s) {
+  public static long asciiMd5Hash(String s) {
 
     int a0 = 0x67452301; // A
     int b0 = 0xefcdab89; // B
