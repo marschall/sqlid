@@ -40,4 +40,25 @@ class HashLruCacheTests {
     assertEquals(10, cache.get(2, i -> i * 5));
   }
 
+  @Test
+  void sizeThree() {
+    Cache<Integer, Integer> cache = new HashLruCache<>(3);
+    assertEquals(2, cache.get(1, i -> i * 2));
+    assertEquals(4, cache.get(2, i -> i * 2));
+    assertEquals(6, cache.get(3, i -> i * 2));
+
+    // 2 is cached, not recomputed
+    assertEquals(4, cache.get(2, i -> i * 3));
+    
+    // order is now 2, 3, 1
+
+    // 1 is removed, 4 is added
+    assertEquals(8, cache.get(4, i -> i * 2));
+    // 3 is removed, 5 is added
+    assertEquals(10, cache.get(5, i -> i * 2));
+
+    // 2 is cached, not recomputed
+    assertEquals(4, cache.get(2, i -> i * 3));
+  }
+
 }
