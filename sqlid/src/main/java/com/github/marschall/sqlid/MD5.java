@@ -351,8 +351,8 @@ final class MD5 {
 
   private static boolean needsAdditionalChunk(String s) {
     // FIXME mask
-    int end = (s.length() + 1 /* 0x00 byte */ + 1 /* first pad byte */) % 64;
-    return (end == 0) || (end > 56);
+    int end = s.length() % 64;
+    return end > (56 - 1 /* 0x00 byte */ - 1 /* first pad byte */);
   }
 
   private static long getHashAscii(String s) {
