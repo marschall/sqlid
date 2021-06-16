@@ -22,6 +22,6 @@ public interface Cache<K, V> {
    * @return the value, if it wasn't in the cache before the call it was
    *         computed using {@code loader} and now is in the cache
    */
-  V get(K key, Function<K, V> loader);
+  V get(K key, Function<? super K, ? extends V> loader);
 
 }

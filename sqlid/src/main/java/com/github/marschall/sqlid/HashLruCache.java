@@ -47,7 +47,7 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
   }
 
   @Override
-  public V get(K key, Function<K, V> loader) {
+  public V get(K key, Function<? super K, ? extends V> loader) {
     Objects.requireNonNull(key, "key");
     Objects.requireNonNull(loader, "loader");
     this.lock.lock();
