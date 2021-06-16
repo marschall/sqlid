@@ -7,6 +7,7 @@ import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 
+import com.github.marschall.sqlid.MD5;
 import com.github.marschall.sqlid.SqlId;
 
 @BenchmarkMode(Throughput)
@@ -21,6 +22,16 @@ public class SqlIdBenchmarks {
   @Benchmark
   public String project() {
     return SqlId.compute("SELECT * from dual where dummy = :1 ");
+  }
+
+  @Benchmark
+  public long asciiMd5Hash() {
+    return MD5.asciiMd5Hash("SELECT * from dual where dummy = :1 ");
+  }
+
+  @Benchmark
+  public Long nonAsciiMd5Hash() {
+    return MD5.nonAsciiMd5Hash("SELECT * from dual where dummy = :1 ");
   }
 
 }
