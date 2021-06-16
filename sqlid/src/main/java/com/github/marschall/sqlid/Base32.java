@@ -8,12 +8,12 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 final class Base32 {
 
   /**
-   * The sql_id length is 13 chars.
+   * The length of sql_id is 13 chars.
    */
   private static final int SQL_ID_SIZE = 13;
 
   /**
-   * The base32 alphabet used for sql_id, it seems to be a custom variant.
+   * The alphabet used for base32 encoding of sql_id, it seems to be a custom variant.
    */
   private static final byte[] BASE32_ALPHABET = new byte[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -35,8 +35,6 @@ final class Base32 {
   }
 
   static String toBase32String(long l) {
-    // Compute Base32, take 13x 5bits
-    // max sql_id length is 13 chars, 13 x 5 => 65bits most significant is always 0
     byte[] result = new byte[SQL_ID_SIZE];
     result[0] = toBase32((int) ((l & (0b11111L << 60)) >>> 60));
     result[1] = toBase32((int) ((l & (0b11111L << 55)) >>> 55));
