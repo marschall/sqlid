@@ -329,12 +329,13 @@ final class MD5 {
     }
     // past the message and first pad byte
 
-    // FIXME * 8 << 3
-    long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
     if (finalBlock) {
-      if (index >= 56) {
+      // FIXME * 8 << 3
+      long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
+      int indexInChunk = index % 64; // FIXME mask
+      if (indexInChunk >= 56) {
         // length in bytes, little endian
-        int shift = (index - 56) * 8;
+        int shift = (indexInChunk - 56) * 8;
         return (int) ((messageLength & (0xFF << shift)) >>> shift);
       } else {
         // padding
