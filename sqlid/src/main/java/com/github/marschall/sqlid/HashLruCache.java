@@ -89,9 +89,7 @@ public final class HashLruCache<K, V> implements Cache<K, V> {
       }
       node.previous = null;
       node.next = this.mostRecentlyUsed;
-      if (node.next != null) {
-        node.next.previous = node;
-      }
+      node.next.previous = node;
       this.mostRecentlyUsed = node;
     }
     return node.value;

@@ -49,16 +49,26 @@ class HashLruCacheTests {
 
     // 2 is cached, not recomputed
     assertEquals(4, cache.get(2, i -> i * 3));
-    
+
     // order is now 2, 3, 1
 
     // 1 is removed, 4 is added
     assertEquals(8, cache.get(4, i -> i * 2));
     // 3 is removed, 5 is added
     assertEquals(10, cache.get(5, i -> i * 2));
+    
+    // order is now 5, 4, 2
 
     // 2 is cached, not recomputed
     assertEquals(4, cache.get(2, i -> i * 3));
+
+    // order is not 2, 5, 4
+
+    // 4 is removed, 6 is added
+    assertEquals(12, cache.get(6, i -> i * 2));
+
+    // 5 is cached, not recomputed
+    assertEquals(10, cache.get(5, i -> i * 3));
   }
 
 }
