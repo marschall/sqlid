@@ -12,13 +12,27 @@ final class MD5HashTests {
 
   static Stream<String> input() {
     return IntStream.range(0, 128)
-                    .mapToObj(MD5HashTests::generateInput);
+                     .mapToObj(MD5HashTests::generateInput);
+  }
+  
+  @ParameterizedTest
+  @MethodSource("input")
+  void md5Equals(String s) {
+    assertEquals(MD5.nonAsciiMd5Hash(s), MD5.asciiMd5Hash(s));
   }
 
   @ParameterizedTest
   @MethodSource("input")
   void hashEquals(String s) {
     assertEquals(OriginalSqlId.SQL_ID(s), SqlId.compute(s));
+  }
+
+  private static StringBuilder generateBuffer(int length) {
+    StringBuilder buffer = new StringBuilder();
+    for (int i = 0; i < length; i++) {
+      buffer.append((char) i);
+    }
+    return buffer;
   }
 
   private static String generateInput(int length) {

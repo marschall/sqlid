@@ -70,7 +70,7 @@ final class MD5 {
     
   }
   
-  private static long nonAsciiMd5Hash(String s) {
+  static long nonAsciiMd5Hash(String s) {
 
     // compute the MD5 hash of the SQL
     // it's not clear whether the MD5 hash is computed based on UTF-8 or the database encoding
@@ -93,7 +93,7 @@ final class MD5 {
     return mostSignificantLong(b);
   }
 
-  private static long asciiMd5Hash(String s) {
+  static long asciiMd5Hash(String s) {
 
     int a0 = 0x67452301; // A
     int b0 = 0xefcdab89; // B
@@ -243,7 +243,7 @@ final class MD5 {
       d0 += d;
     }
 
-    return (Integer.toUnsignedLong(c0) << 32) | d0;
+    return (Integer.toUnsignedLong(c0) << 32) | Integer.toUnsignedLong(d0);
   }
 
   private static int F(int x, int y, int z) {
@@ -291,7 +291,7 @@ final class MD5 {
   }
 
   /**
-   * Quick access to a word in the input message, does not deal with apdding.
+   * Quick access to a word in the input message, does not deal with padding.
    */
   private static int fastWordAt(String s, int index, int chunckIndex) {
     int base = (chunckIndex * 64) + (4 * index);
@@ -329,6 +329,7 @@ final class MD5 {
     }
     // past the message and first pad byte
 
+    // FIXME * 8 << 3
     long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
     if (finalBlock) {
       if (index >= 56) {
