@@ -10,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
  * @see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC-1321</a>
  */
 public final class MD5 {
-  
+
   // FIXME reduce scope
 
 //s specifies the per-round shift amounts
@@ -69,9 +69,9 @@ public final class MD5 {
     } else {
       return nonAsciiMd5Hash(s);
     }
-    
+
   }
-  
+
   public static long nonAsciiMd5HashIncrementcal(String s, MessageDigest md) {
     byte[] buffer = new byte[16];
     int bufferIndex = 0;
@@ -79,7 +79,7 @@ public final class MD5 {
     for (int i = 0; i < stringLength; i++) {
       char c = s.charAt(i);
       if (Character.isLowSurrogate(c)) {
-        if (i == stringLength - 1) {
+        if (i == (stringLength - 1)) {
           throw new IllegalArgumentException("truncated input");
         }
         i += 1;
@@ -98,7 +98,7 @@ public final class MD5 {
       System.out.println("#isLowSurrogate: " + Character.isLowSurrogate(c));
       System.out.println("#isHighSurrogate: " + Character.isHighSurrogate(c));
       System.out.println("#isSurrogate: " + Character.isSurrogate(c));
-      
+
     }
   }
 
@@ -298,25 +298,25 @@ public final class MD5 {
    * Rotation is separate from addition to prevent recomputation.
    */
   private static int FF(int a, int b, int c, int d, int x, int s, int ac) {
-    a += F (b, c, d) + x + ac;
-    a = Integer.rotateLeft(a, s);
+    a += ((b & c) | ((~b) & d)) + x + ac;
+    a = Integer.rotateLeft(a + ((b & c) | ((~b) & d)) + x + ac, s) + b;
     a += b;
     return a;
   }
   private static int GG(int a, int b, int c, int d, int x, int s, int ac) {
-    a += G (b, c, d) + x + ac;
+    a += ((b & d) | (c & (~d))) + x + ac;
     a = Integer.rotateLeft(a, s);
     a += b;
     return a;
   }
   private static int HH(int a, int b, int c, int d, int x, int s, int ac) {
-    a += H (b, c, d) + x + ac;
+    a += ((b ^ c) ^ d) + x + ac;
     a = Integer.rotateLeft(a, s);
-    a += (b);
+    a += b;
     return a;
   }
   private static int II(int a, int b, int c, int d, int x, int s, int ac) {
-    a += I ((b), (c), (d)) + x + ac;
+    a += (c ^ (b | (~d))) + x + ac;
     a = Integer.rotateLeft(a, s);
     a += b;
     return a;
