@@ -1,6 +1,7 @@
 package com.github.marschall.sqlid;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,6 +58,15 @@ class SqlIdLookupTests extends AbstractOracleTests {
       Optional<String> maybeSqlId = this.lookup.getSqlIdOfException(sqlException);
       assertTrue(maybeSqlId.isPresent());
       assertEquals("71hmmykrsa7wp", maybeSqlId.get());
+    }
+  }
+
+  @Test
+  void tgetSqlIdOfExceptionNoSql() throws SQLException {
+    try (Connection connection = this.dataSource.getConnection()) {
+      SQLException sqlException = assertThrows(SQLException.class, () -> connection.createStatement(-1, -1));
+      Optional<String> maybeSqlId = this.lookup.getSqlIdOfException(sqlException);
+      assertFalse(maybeSqlId.isPresent());
     }
   }
 
