@@ -195,6 +195,11 @@ public final class MD5 {
         x13 = slowWordAt(s, 13, chunkIndex, isLast);
         x14 = slowWordAt(s, 14, chunkIndex, isLast);
         x15 = slowWordAt(s, 15, chunkIndex, isLast);
+        if (isLast) {
+          long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
+          x14 = (int) messageLength;
+          x15 = (int) (messageLength >>> 32);
+        }
       }
 
       /* Round 1 */
@@ -361,24 +366,7 @@ public final class MD5 {
     }
     // past the message and first pad byte
 
-    if (finalBlock) {
-      // FIXME * 8 << 3
-      long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
-      int indexInChunk = index % 64; // FIXME mask
-      if (indexInChunk >= 56) {
-        // length in bytes, little endian
-        int shift = (indexInChunk - 56) * 8;
-        return (int) ((messageLength & (0xFF << shift)) >>> shift);
-      } else {
-        // padding
-        // before the length
-        return 0x00;
-      }
-    } else {
-      // padding
-      // non-final block has no length
-      return 0x00;
-    }
+    return 0x00;
   }
 
   private static boolean needsAdditionalChunk(String s) {
