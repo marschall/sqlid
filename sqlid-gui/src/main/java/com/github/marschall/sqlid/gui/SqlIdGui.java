@@ -5,7 +5,10 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,6 +20,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.SwingWorker.StateValue;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -34,6 +38,7 @@ public final class SqlIdGui {
 
   private final SqlIdModel model;
   private JButton computeButton;
+  private JFrame frame;
 
   SqlIdGui() {
     this.model = new SqlIdModel();
@@ -43,28 +48,67 @@ public final class SqlIdGui {
     // TODO disable GUI
     // TODO enable GUI
     SwingWorker<String, String> task = this.model.computeSqlIdWworker();
+    task.addPropertyChangeListener(event -> {
+      if (event.getPropertyName().equals("state")) {
+        Object newValue = event.getNewValue();
+        Object oldValue = event.getOldValue();
+        try {
+          task.get();
+        } catch (InterruptedException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+    });
     task.execute();
   }
-  
+
   void showException(SQLException exception) {
-    // TODO frame
-    JOptionPane.showMessageDialog(null, exception.getMessage(), "SQL Exception", JOptionPane.ERROR_MESSAGE);
+    JOptionPane.showMessageDialog(this.frame, exception.getMessage(), "SQL Exception", JOptionPane.ERROR_MESSAGE);
+  }
+
+  private void setUrl(String url) {
+    this.setModelProperty(url, this.model::setUrl);
+  }
+
+  private void setUser(String user) {
+    this.setModelProperty(user, this.model::setUser);
+  }
+  
+  private void setPassword(String password) {
+    this.setModelProperty(password, this.model::setPassword);
+  }
+
+  private void setModelProperty(String value, Consumer<String> setter) {
+    boolean validBefore = this.model.isValid();
+    setter.accept(value);
+    boolean validAfter = this.model.isValid();
+    if (validBefore != validAfter) {
+      this.setComputeEnabled(validAfter);
+    }
+  }
+
+  private void setComputeEnabled(boolean enabled) {
+    this.computeButton.setEnabled(enabled);
   }
 
   private void createAndShowGui() {
-    JFrame frame = new JFrame("SQL_ID GUI");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    this.frame = new JFrame("SQL_ID GUI");
+    this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    Container contentPane = frame.getContentPane();
+    Container contentPane = this.frame.getContentPane();
 
     addTextArea(contentPane);
 
     contentPane.add(createBottomPanel(), BorderLayout.PAGE_END);
 
-    frame.pack();
-    frame.setMinimumSize(frame.getSize());
+    this.frame.pack();
+    this.frame.setMinimumSize(this.frame.getSize());
 
-    frame.setVisible(true);
+    this.frame.setVisible(true);
   }
 
   private void addTextArea(Container container) {
@@ -75,6 +119,7 @@ public final class SqlIdGui {
 
   private JPanel createBottomPanel() {
     JPanel bottomPanel = new JPanel(new BorderLayout());
+    bottomPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
     bottomPanel.add(createConnectionPanel(), BorderLayout.LINE_START);
     bottomPanel.add(createButtonPanel(), BorderLayout.LINE_END);
     return bottomPanel;
@@ -90,6 +135,7 @@ public final class SqlIdGui {
 
   private JPanel createConnectionPanel() {
     JPanel connectionPanel = new JPanel(new GridBagLayout());
+//    connectionPanel.setBorder(BorderFactory.createTitledBorder("Connection"));
     GridBagConstraints constraints;
 
     String[] labels = {"URL:", "User:", "Password:"};
@@ -98,10 +144,14 @@ public final class SqlIdGui {
     }
 
     constraints = connectionFieldConstraints(0);
-    connectionPanel.add(new JTextField(32), constraints);
+    JTextField urlField = new JTextField(32);
+    urlField.addActionListener(event -> setUrl(urlField.getText()));
+    connectionPanel.add(urlField, constraints);
 
     constraints = connectionFieldConstraints(1);
-    connectionPanel.add(new JTextField(32), constraints);
+    JTextField userField = new JTextField(32);
+    userField.addActionListener(event -> setUser(userField.getText()));
+    connectionPanel.add(userField, constraints);
 
     constraints = connectionFieldConstraints(2);
     connectionPanel.add(new JPasswordField(32), constraints);
