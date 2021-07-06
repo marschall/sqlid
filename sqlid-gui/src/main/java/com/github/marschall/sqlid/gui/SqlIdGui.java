@@ -42,7 +42,7 @@ public final class SqlIdGui {
   void computeSqlId() {
     // TODO disable GUI
     // TODO enable GUI
-    ComputeSqlId task = new ComputeSqlId();
+    SwingWorker<String, String> task = this.model.computeSqlIdWworker();
     task.execute();
   }
   
@@ -123,15 +123,6 @@ public final class SqlIdGui {
     constraints.gridy = i;
     constraints.anchor = GridBagConstraints.LINE_START;
     return constraints;
-  }
-
-  final class ComputeSqlId extends SwingWorker<String, String> {
-
-    @Override
-    protected String doInBackground() throws Exception {
-      return model.computeSqlId();
-    }
-
   }
 
 }

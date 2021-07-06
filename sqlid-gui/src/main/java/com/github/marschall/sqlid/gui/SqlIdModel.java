@@ -4,21 +4,22 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
+import javax.swing.SwingWorker;
 
 import com.github.marschall.sqlid.SqlId;
 
 import oracle.jdbc.pool.OracleDataSource;
 
 final class SqlIdModel {
-  
+
   private volatile String url;
-  
+
   private volatile String user;
-  
+
   private volatile String password;
-  
+
   private volatile String query;
-  
+
   private volatile boolean nativeSql;
 
   SqlIdModel() {
@@ -64,32 +65,19 @@ final class SqlIdModel {
   void setNativeSql(boolean nativeSql) {
     this.nativeSql = nativeSql;
   }
-  
-  String computeSqlId() throws SQLException {
-    String oracleSql;
+
+  SwingWorker<String, String> computeSqlIdWworker() {
+    return new SqlIdWorker(this.newSqlIdComputation());
+  }
+
+  private AbstractSqlIdComputation newSqlIdComputation() {
     if (this.nativeSql) {
-      oracleSql = this.query;
+      return new NativeSqlIdComputation(this.query);
     } else {
-      oracleSql = computeNativeSql();
-    }
-    return SqlId.compute(oracleSql);
-  }
-  
-  private String computeNativeSql() throws SQLException {
-    DataSource dataSource = createDataSource();
-    try (Connection connection = dataSource.getConnection()) {
-      return connection.nativeSQL(this.query);
+      return new JdbcSqlIdComputation(this.url, this.user, this.password, this.query);
     }
   }
-  
-  private DataSource createDataSource() throws SQLException {
-    OracleDataSource dataSource = new OracleDataSource();
-    dataSource.setURL(this.url);
-    dataSource.setUser(this.user);
-    dataSource.setPassword(this.password);
-    return dataSource;
-  }
-  
+
   boolean isValid() {
     if (this.nativeSql) {
       return !isEmpty(this.query);
@@ -99,9 +87,9 @@ final class SqlIdModel {
           && !isEmpty(this.password)
           && !isEmpty(this.query);
     }
-    
+
   }
-  
+
   private static boolean isEmpty(String s) {
     return s == null || s.isEmpty();
   }
