@@ -1,14 +1,6 @@
 package com.github.marschall.sqlid.gui;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
 import javax.swing.SwingWorker;
-
-import com.github.marschall.sqlid.SqlId;
-
-import oracle.jdbc.pool.OracleDataSource;
 
 final class SqlIdModel {
 
