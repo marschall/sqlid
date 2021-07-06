@@ -32,11 +32,11 @@ public final class SqlIdGui {
     SwingUtilities.invokeLater(gui::createAndShowGui);
   }
 
-  private final SqlGuiModel model;
+  private final SqlIdModel model;
   private JButton computeButton;
 
   SqlIdGui() {
-    this.model = new SqlGuiModel();
+    this.model = new SqlIdModel();
   }
 
   void computeSqlId() {

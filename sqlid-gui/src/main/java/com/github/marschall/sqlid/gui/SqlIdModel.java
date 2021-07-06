@@ -9,7 +9,7 @@ import com.github.marschall.sqlid.SqlId;
 
 import oracle.jdbc.pool.OracleDataSource;
 
-final class SqlGuiModel {
+final class SqlIdModel {
   
   private volatile String url;
   
@@ -21,7 +21,7 @@ final class SqlGuiModel {
   
   private volatile boolean nativeSql;
 
-  SqlGuiModel() {
+  SqlIdModel() {
     super();
   }
 
