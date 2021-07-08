@@ -1,0 +1,9 @@
+Benchmark                              Mode  Cnt     Score     Error   Units
+SqlIdBenchmarks.asciiMd5Hash          thrpt    5  3873.624 ± 200.806  ops/ms
+SqlIdBenchmarks.asciiMd5Hash:·jfr     thrpt            NaN               ---
+SqlIdBenchmarks.nonAsciiMd5Hash       thrpt    5  3766.774 ±  75.483  ops/ms
+SqlIdBenchmarks.nonAsciiMd5Hash:·jfr  thrpt            NaN               ---
+SqlIdBenchmarks.original              thrpt    5   979.839 ±  53.132  ops/ms
+SqlIdBenchmarks.original:·jfr         thrpt            NaN               ---
+SqlIdBenchmarks.project               thrpt    5  3276.287 ± 267.743  ops/ms
+SqlIdBenchmarks.project:·jfr          thrpt            NaN               ---
