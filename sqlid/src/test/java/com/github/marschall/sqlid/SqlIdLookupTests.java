@@ -1,9 +1,11 @@
 package com.github.marschall.sqlid;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,7 +18,6 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class SqlIdLookupTests extends AbstractOracleTests {
 
@@ -61,6 +62,15 @@ class SqlIdLookupTests extends AbstractOracleTests {
   }
 
   @Test
+  void tgetSqlIdOfExceptionNoSql() throws SQLException {
+    try (Connection connection = this.dataSource.getConnection()) {
+      SQLException sqlException = assertThrows(SQLException.class, () -> connection.createStatement(-1, -1));
+      Optional<String> maybeSqlId = this.lookup.getSqlIdOfException(sqlException);
+      assertFalse(maybeSqlId.isPresent());
+    }
+  }
+
+  @Test
   void throwException() throws SQLException {
 
     DataSource throwingDataSource = mock(DataSource.class);
@@ -68,7 +78,7 @@ class SqlIdLookupTests extends AbstractOracleTests {
     when(throwingDataSource.getConnection()).thenReturn(connection);
 
     SQLException expectedException = new SQLException("nativeSQL not available");
-    when(connection.nativeSQL(Mockito.anyString())).thenThrow(expectedException);
+    when(connection.nativeSQL(anyString())).thenThrow(expectedException);
 
     SqlIdLookup throwingLookup = new SqlIdLookup(throwingDataSource, 1);
     SQLException actualException = assertThrows(SQLException.class, () -> throwingLookup.getSqlIdOfJdbcString("SELECT * from dual where dummy = ?"));
