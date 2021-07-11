@@ -45,18 +45,6 @@ final class MD5 {
     }
   }
 
-  public static void main(String[] args) {
-    String s = "\uD83D\uDC7D";
-    System.out.println(s);
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      System.out.println("" + i + ": " + Integer.toHexString(c));
-      System.out.println("#isLowSurrogate: " + Character.isLowSurrogate(c));
-      System.out.println("#isHighSurrogate: " + Character.isHighSurrogate(c));
-      System.out.println("#isSurrogate: " + Character.isSurrogate(c));
-    }
-  }
-
   static long nonAsciiMd5Hash(String s) {
     Hasher hasher = new Hasher();
     int i = 0;
