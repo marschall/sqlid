@@ -41,12 +41,12 @@ final class MD5 {
     if (utf8Length == s.length()) {
       return asciiMd5Hash(s);
     } else {
-      return bmpMd5Hash(s);
+      return nonAsciiMd5Hash(s);
     }
   }
 
   public static void main(String[] args) {
-    String s = "\u1F600";
+    String s = "\uD83D\uDC7D";
     System.out.println(s);
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
@@ -57,19 +57,35 @@ final class MD5 {
     }
   }
 
-  static long bmpMd5Hash(String s) {
+  static long nonAsciiMd5Hash(String s) {
     Hasher hasher = new Hasher();
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      if (c < 0b10000000) {
-        hasher.put((byte) c);
-      } else if (c < 0b100000000000) {
-        hasher.put((byte) (0b11000000 | ((c & 0b11111_000000) >>> 6)));
-        hasher.put((byte) (0b10000000 | (c & 0b111111)));
+    int i = 0;
+    while (i < s.length()) {
+      char c = s.charAt(i++);
+      if (Character.isHighSurrogate(c)) {
+        if (i == s.length()) {
+          throw new IllegalArgumentException("malformed input, truncated");
+        }
+        char low = s.charAt(i++);
+        if (!Character.isLowSurrogate(low)) {
+          throw new IllegalArgumentException("malformed input, missing surrogate pair");
+        }
+        int codePoint = Character.toCodePoint(c, low);
+        hasher.put((byte) (0b11110000 | ((codePoint & 0b111_000000_000000_000000) >>> 18)));
+        hasher.put((byte) (0b10000000 | ((codePoint & 0b111111_000000_000000) >>> 12)));
+        hasher.put((byte) (0b10000000 | ((codePoint & 0b111111_000000) >>> 6)));
+        hasher.put((byte) (0b10000000 | (codePoint & 0b111111)));
       } else {
-        hasher.put((byte) (0b111000000 | ((c & 0b1111_000000_000000) >>> 12)));
-        hasher.put((byte) (0b10000000 | ((c & 0b111111_000000) >>> 6)));
-        hasher.put((byte) (0b10000000 | (c & 0b111111)));
+        if (c < 0b10000000) {
+          hasher.put((byte) c);
+        } else if (c < 0b100000000000) {
+          hasher.put((byte) (0b11000000 | ((c & 0b11111_000000) >>> 6)));
+          hasher.put((byte) (0b10000000 | (c & 0b111111)));
+        } else {
+          hasher.put((byte) (0b11100000 | ((c & 0b1111_000000_000000) >>> 12)));
+          hasher.put((byte) (0b10000000 | ((c & 0b111111_000000) >>> 6)));
+          hasher.put((byte) (0b10000000 | (c & 0b111111)));
+        }
       }
     }
     return hasher.finish();
