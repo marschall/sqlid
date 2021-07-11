@@ -43,7 +43,6 @@
     <module>sqlid</module>
     <module>sqlid-benchmarks</module>
     <module>sqlid-jcstress</module>
-    <module>sqlid-module</module>
     <module>sqlid-gui</module>
   </modules>
 
