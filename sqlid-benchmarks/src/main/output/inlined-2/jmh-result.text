@@ -1,0 +1,22 @@
+Benchmark                                               Mode  Cnt     Score     Error   Units
+SqlIdBenchmarks.jdkHash                                thrpt    5  3735.036 ±  29.001  ops/ms
+SqlIdBenchmarks.jdkHash:·gc.alloc.rate                 thrpt    5  1818.131 ±  14.150  MB/sec
+SqlIdBenchmarks.jdkHash:·gc.alloc.rate.norm            thrpt    5   536.000 ±   0.001    B/op
+SqlIdBenchmarks.jdkHash:·gc.churn.G1_Eden_Space        thrpt    5  1816.152 ±   0.112  MB/sec
+SqlIdBenchmarks.jdkHash:·gc.churn.G1_Eden_Space.norm   thrpt    5   535.418 ±   4.158    B/op
+SqlIdBenchmarks.jdkHash:·gc.count                      thrpt    5   160.000            counts
+SqlIdBenchmarks.jdkHash:·gc.time                       thrpt    5    85.000                ms
+SqlIdBenchmarks.original                               thrpt    5  1014.278 ±  20.951  ops/ms
+SqlIdBenchmarks.original:·gc.alloc.rate                thrpt    5  4134.107 ±  85.303  MB/sec
+SqlIdBenchmarks.original:·gc.alloc.rate.norm           thrpt    5  4488.000 ±   0.001    B/op
+SqlIdBenchmarks.original:·gc.churn.G1_Eden_Space       thrpt    5  4135.767 ± 199.624  MB/sec
+SqlIdBenchmarks.original:·gc.churn.G1_Eden_Space.norm  thrpt    5  4489.711 ± 152.244    B/op
+SqlIdBenchmarks.original:·gc.count                     thrpt    5   266.000            counts
+SqlIdBenchmarks.original:·gc.time                      thrpt    5   192.000                ms
+SqlIdBenchmarks.project                                thrpt    5  5352.522 ±  35.666  ops/ms
+SqlIdBenchmarks.project:·gc.alloc.rate                 thrpt    5   427.758 ±   2.829  MB/sec
+SqlIdBenchmarks.project:·gc.alloc.rate.norm            thrpt    5    88.000 ±   0.001    B/op
+SqlIdBenchmarks.project:·gc.churn.G1_Eden_Space        thrpt    5   419.976 ± 119.688  MB/sec
+SqlIdBenchmarks.project:·gc.churn.G1_Eden_Space.norm   thrpt    5    86.395 ±  24.368    B/op
+SqlIdBenchmarks.project:·gc.count                      thrpt    5    37.000            counts
+SqlIdBenchmarks.project:·gc.time                       thrpt    5    20.000                ms
