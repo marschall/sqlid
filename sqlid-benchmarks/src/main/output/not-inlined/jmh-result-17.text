@@ -1,0 +1,32 @@
+Benchmark                                                          Mode  Cnt     Score     Error   Units
+SqlIdBenchmarks.asciiMd5Hash                                      thrpt    5  3614.910 ±   9.871  ops/ms
+SqlIdBenchmarks.asciiMd5Hash:·gc.alloc.rate                       thrpt    5    ≈ 10⁻⁴            MB/sec
+SqlIdBenchmarks.asciiMd5Hash:·gc.alloc.rate.norm                  thrpt    5    ≈ 10⁻⁵              B/op
+SqlIdBenchmarks.asciiMd5Hash:·gc.count                            thrpt    5       ≈ 0            counts
+SqlIdBenchmarks.nonAsciiMd5Hash                                   thrpt    5  5428.703 ±  19.382  ops/ms
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.alloc.rate                    thrpt    5  1617.136 ±   5.738  MB/sec
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.alloc.rate.norm               thrpt    5   328.013 ±   0.002    B/op
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.churn.G1_Eden_Space           thrpt    5  1612.268 ± 118.915  MB/sec
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.churn.G1_Eden_Space.norm      thrpt    5   327.030 ±  25.243    B/op
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.churn.G1_Survivor_Space       thrpt    5     0.003 ±   0.004  MB/sec
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.churn.G1_Survivor_Space.norm  thrpt    5     0.001 ±   0.001    B/op
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.count                         thrpt    5   143.000            counts
+SqlIdBenchmarks.nonAsciiMd5Hash:·gc.time                          thrpt    5    81.000                ms
+SqlIdBenchmarks.original                                          thrpt    5  1203.106 ±   5.578  ops/ms
+SqlIdBenchmarks.original:·gc.alloc.rate                           thrpt    5  4431.889 ±  20.636  MB/sec
+SqlIdBenchmarks.original:·gc.alloc.rate.norm                      thrpt    5  4056.151 ±   0.007    B/op
+SqlIdBenchmarks.original:·gc.churn.G1_Eden_Space                  thrpt    5  4431.053 ± 118.899  MB/sec
+SqlIdBenchmarks.original:·gc.churn.G1_Eden_Space.norm             thrpt    5  4055.397 ± 114.916    B/op
+SqlIdBenchmarks.original:·gc.churn.G1_Survivor_Space              thrpt    5     0.008 ±   0.003  MB/sec
+SqlIdBenchmarks.original:·gc.churn.G1_Survivor_Space.norm         thrpt    5     0.008 ±   0.003    B/op
+SqlIdBenchmarks.original:·gc.count                                thrpt    5   393.000            counts
+SqlIdBenchmarks.original:·gc.time                                 thrpt    5   201.000                ms
+SqlIdBenchmarks.project                                           thrpt    5  3082.244 ±  45.786  ops/ms
+SqlIdBenchmarks.project:·gc.alloc.rate                            thrpt    5   246.336 ±   3.672  MB/sec
+SqlIdBenchmarks.project:·gc.alloc.rate.norm                       thrpt    5    88.004 ±   0.002    B/op
+SqlIdBenchmarks.project:·gc.churn.G1_Eden_Space                   thrpt    5   236.767 ±  97.094  MB/sec
+SqlIdBenchmarks.project:·gc.churn.G1_Eden_Space.norm              thrpt    5    84.572 ±  33.942    B/op
+SqlIdBenchmarks.project:·gc.churn.G1_Survivor_Space               thrpt    5     0.037 ±   0.297  MB/sec
+SqlIdBenchmarks.project:·gc.churn.G1_Survivor_Space.norm          thrpt    5     0.013 ±   0.107    B/op
+SqlIdBenchmarks.project:·gc.count                                 thrpt    5    21.000            counts
+SqlIdBenchmarks.project:·gc.time                                  thrpt    5    13.000                ms

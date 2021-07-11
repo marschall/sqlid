@@ -21,6 +21,7 @@ public class Main {
             .resultFormat(ResultFormatType.TEXT)
             .output(fileName)
             .addProfiler("gc")
+//            .addProfiler("jfr", "debugNonSafePoints=true")
             .build();
     new Runner(options).run();
   }
