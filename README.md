@@ -26,6 +26,8 @@ If you already have a native query string with :name as placeholders you can sim
 SqlId.compute("SELECT * FROM dual WHERE dummy = :1 ");
 ```
 
+If you have a JDBC query string with ? as placeholders you first need to call `java.sql.Connection#nativeSQL(String)` to convert it to a native query string.
+
 If you want more convenience `SqlIdLookup` takes care of converting form JDBC query strings to native query strings and also performs caching.
 
 
