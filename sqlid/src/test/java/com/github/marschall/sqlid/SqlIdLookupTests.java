@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.Optional;
 
@@ -63,9 +64,14 @@ class SqlIdLookupTests extends AbstractOracleTests {
 
   @Test
   void tgetSqlIdOfExceptionNoSql() throws SQLException {
-    try (Connection connection = this.dataSource.getConnection()) {
-      SQLException sqlException = assertThrows(SQLException.class, () -> connection.createStatement(-1, -1));
+    try (Connection connection = this.dataSource.getConnection();
+         Statement statement = connection.createStatement(-1, -1)) {
+      SQLException sqlException = assertThrows(SQLException.class, () -> statement.getMoreResults(-1));
       Optional<String> maybeSqlId = this.lookup.getSqlIdOfException(sqlException);
+      assertFalse(maybeSqlId.isPresent());
+
+      sqlException = assertThrows(SQLException.class, () -> statement.setMaxFieldSize(-1));
+      maybeSqlId = this.lookup.getSqlIdOfException(sqlException);
       assertFalse(maybeSqlId.isPresent());
     }
   }
