@@ -1,5 +1,6 @@
 package com.github.marschall.sqlid;
 
+import java.lang.invoke.SwitchPoint;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,7 +11,12 @@ import java.security.NoSuchAlgorithmException;
  * @see <a href="https://www.ietf.org/rfc/rfc1321.txt">RFC-1321</a>
  */
 public final class MD5 {
-  
+
+  /**
+   * Chunks are 512 bits.
+   */
+  private static final int CHUNK_BYTES = 64;
+
   // FIXME reduce scope
 
 //s specifies the per-round shift amounts
@@ -134,7 +140,7 @@ public final class MD5 {
 
     // Process the message in successive 512-bit chunks
     // we can directly index into the message string
-    int fastLoopCount = s.length() / 64;
+    int fastLoopCount = s.length() / CHUNK_BYTES;
     int totalLoopCount = fastLoopCount + (needsAdditionalChunk(s) ? 2 : 1);
 
     for (int chunkIndex = 0; chunkIndex < totalLoopCount; chunkIndex++) {
@@ -179,22 +185,170 @@ public final class MD5 {
         x15 = fastWordAt(s, 15, chunkIndex);
       } else {
         boolean isLast = chunkIndex == (totalLoopCount - 1);
-         x0 = slowWordAt(s,  0, chunkIndex, isLast);
-         x1 = slowWordAt(s,  1, chunkIndex, isLast);
-         x2 = slowWordAt(s,  2, chunkIndex, isLast);
-         x3 = slowWordAt(s,  3, chunkIndex, isLast);
-         x4 = slowWordAt(s,  4, chunkIndex, isLast);
-         x5 = slowWordAt(s,  5, chunkIndex, isLast);
-         x6 = slowWordAt(s,  6, chunkIndex, isLast);
-         x7 = slowWordAt(s,  7, chunkIndex, isLast);
-         x8 = slowWordAt(s,  8, chunkIndex, isLast);
-         x9 = slowWordAt(s,  9, chunkIndex, isLast);
-        x10 = slowWordAt(s, 10, chunkIndex, isLast);
-        x11 = slowWordAt(s, 11, chunkIndex, isLast);
-        x12 = slowWordAt(s, 12, chunkIndex, isLast);
-        x13 = slowWordAt(s, 13, chunkIndex, isLast);
-        x14 = slowWordAt(s, 14, chunkIndex, isLast);
-        x15 = slowWordAt(s, 15, chunkIndex, isLast);
+
+        int fullWords;
+        int padWords;
+        if (chunkIndex * CHUNK_BYTES > s.length()) {
+          fullWords = 0;
+          padWords = 16;
+        } else {
+          // TODO shift
+          fullWords = (s.length() - (chunkIndex * CHUNK_BYTES)) / 4;
+          int remainder = s.length() - (fullWords * 4);
+          if (remainder > 1) {
+            padWords = 15 - fullWords - 1;
+          } else {
+            padWords = 15 - fullWords;
+          }
+        }
+
+         x0 = 0;
+         x1 = 0;
+         x2 = 0;
+         x3 = 0;
+         x4 = 0;
+         x5 = 0;
+         x6 = 0;
+         x7 = 0;
+         x8 = 0;
+         x9 = 0;
+        x10 = 0;
+        x11 = 0;
+        x12 = 0;
+        x13 = 0;
+        x14 = 0;
+        x15 = 0;
+        switch (fullWords) {
+          case 16:
+            x15 = fastWordAt(s, 15, chunkIndex);
+          case 15:
+            x14 = fastWordAt(s, 14, chunkIndex);
+          case 14:
+            x13 = fastWordAt(s, 13, chunkIndex);
+          case 13:
+            x12 = fastWordAt(s, 12, chunkIndex);
+          case 12:
+            x11 = fastWordAt(s, 11, chunkIndex);
+          case 11:
+            x10 = fastWordAt(s, 10, chunkIndex);
+          case 10:
+            x9 = fastWordAt(s,  9, chunkIndex);
+          case 9:
+            x8 = fastWordAt(s,  8, chunkIndex);
+          case 8:
+            x7 = fastWordAt(s,  7, chunkIndex);
+          case 7:
+            x6 = fastWordAt(s,  6, chunkIndex);
+          case 6:
+            x5 = fastWordAt(s,  5, chunkIndex);
+          case 5:
+            x4 = fastWordAt(s,  4, chunkIndex);
+          case 4:
+            x3 = fastWordAt(s,  3, chunkIndex);
+          case 3:
+            x2 = fastWordAt(s,  2, chunkIndex);
+          case 2:
+            x1 = fastWordAt(s,  1, chunkIndex);
+          case 1:
+            x0 = fastWordAt(s,  0, chunkIndex);
+        }
+
+        switch (fullWords) {
+          case 0:
+            x0 = slowWordAt(s,  0, chunkIndex, isLast);
+            if (padWords == 14) {
+              x1 = slowWordAt(s,  1, chunkIndex, isLast);
+            }
+            break;
+          case 1:
+            x1 = slowWordAt(s,  1, chunkIndex, isLast);
+            if (padWords == 13) {
+              x2 = slowWordAt(s,  2, chunkIndex, isLast);
+            }
+            break;
+          case 2:
+            x2 = slowWordAt(s,  2, chunkIndex, isLast);
+            if (padWords == 12) {
+              x3 = slowWordAt(s,  3, chunkIndex, isLast);
+            }
+            break;
+          case 3:
+            x3 = slowWordAt(s,  3, chunkIndex, isLast);
+            if (padWords == 11) {
+              x4 = slowWordAt(s,  4, chunkIndex, isLast);
+            }
+            break;
+          case 4:
+            x4 = slowWordAt(s,  4, chunkIndex, isLast);
+            if (padWords == 10) {
+              x5 = slowWordAt(s,  5, chunkIndex, isLast);
+            }
+            break;
+          case 5:
+            x5 = slowWordAt(s,  5, chunkIndex, isLast);
+            if (padWords == 9) {
+              x6 = slowWordAt(s,  6, chunkIndex, isLast);
+            }
+            break;
+          case 6:
+            x6 = slowWordAt(s,  6, chunkIndex, isLast);
+            if (padWords == 8) {
+              x7 = slowWordAt(s,  7, chunkIndex, isLast);
+            }
+            break;
+          case 7:
+            x7 = slowWordAt(s,  7, chunkIndex, isLast);
+            if (padWords == 7) {
+              x8 = slowWordAt(s,  8, chunkIndex, isLast);
+            }
+            break;
+          case 8:
+            x8 = slowWordAt(s,  8, chunkIndex, isLast);
+            if (padWords == 6) {
+              x9 = slowWordAt(s,  9, chunkIndex, isLast);
+            }
+            break;
+          case 9:
+            x9 = slowWordAt(s,  9, chunkIndex, isLast);
+            if (padWords == 5) {
+              x10 = slowWordAt(s,  10, chunkIndex, isLast);
+            }
+            break;
+          case 10:
+            x10 = slowWordAt(s,  10, chunkIndex, isLast);
+            if (padWords == 4) {
+              x11 = slowWordAt(s,  11, chunkIndex, isLast);
+            }
+            break;
+          case 11:
+            x11 = slowWordAt(s,  11, chunkIndex, isLast);
+            if (padWords == 3) {
+              x12 = slowWordAt(s,  12, chunkIndex, isLast);
+            }
+            break;
+          case 12:
+            x12 = slowWordAt(s,  12, chunkIndex, isLast);
+            if (padWords == 2) {
+              x13 = slowWordAt(s,  13, chunkIndex, isLast);
+            }
+            break;
+          case 13:
+            x13 = slowWordAt(s,  13, chunkIndex, isLast);
+            if (padWords == 1) {
+              x14 = slowWordAt(s,  14, chunkIndex, isLast);
+            }
+            break;
+          case 14:
+            x14 = slowWordAt(s,  14, chunkIndex, isLast);
+            if (padWords == 0) {
+              x15 = slowWordAt(s,  15, chunkIndex, isLast);
+            }
+            break;
+          case 15:
+            x15 = slowWordAt(s,  15, chunkIndex, isLast);
+            break;
+        }
+
         if (isLast) {
           long messageLength = (s.length() + 1) * 8; // length in bits, additional 1 byte for the trailing 0x00 byte
           x14 = (int) messageLength;
