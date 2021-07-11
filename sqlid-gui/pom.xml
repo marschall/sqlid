@@ -3,7 +3,7 @@
   <parent>
     <groupId>com.github.marschall</groupId>
     <artifactId>sqlid-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
   </parent>
   <artifactId>sqlid-gui</artifactId>
   <name>SQL_ID GUI</name>
