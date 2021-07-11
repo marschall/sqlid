@@ -1,8 +1,6 @@
 package com.github.marschall.sqlid;
 
 import java.security.DigestException;
-import java.lang.invoke.SwitchPoint;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
