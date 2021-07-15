@@ -1,4 +1,4 @@
-SQL_ID
+SQL_ID [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/sqlid/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.marschall/sqlid)  [![Javadoc](https://javadoc.io/badge2/com.github.marschall/sqlid/javadoc.svg)](https://javadoc.io/doc/com.github.marschall/sqlid) 
 ======
 
 Computes the Oracle SQL_ID of a JDBC query string.
