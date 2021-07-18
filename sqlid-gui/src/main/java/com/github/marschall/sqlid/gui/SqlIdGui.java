@@ -267,6 +267,7 @@ public final class SqlIdGui {
     GridBagConstraints constraints = new GridBagConstraints();
     constraints.gridx = 0;
     constraints.gridy = 2;
+    constraints.gridwidth = 2;
     constraints.anchor = GridBagConstraints.LINE_END;
     constraints.insets = new Insets(0, 0, INSETS, 0);
     return constraints;
