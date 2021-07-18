@@ -1,8 +1,17 @@
 package com.github.marschall.sqlid.gui;
 
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+
 import javax.swing.SwingWorker;
 
 final class SqlIdModel {
+
+  private static final String PASSWORD_PREFERENCE = "password";
+
+  private static final String USER_PREFERENCE = "user";
+
+  private static final String URL_PREFERENCE = "url";
 
   private volatile String url;
 
@@ -14,36 +23,41 @@ final class SqlIdModel {
 
   private volatile boolean nativeSql;
 
+  private Preferences preferences;
+
   SqlIdModel() {
     super();
   }
 
   String getUrl() {
-    return url;
+    return this.url;
   }
 
   void setUrl(String url) {
     this.url = url;
+    this.preferences.put(URL_PREFERENCE, url);
   }
 
   String getUser() {
-    return user;
+    return this.user;
   }
 
   void setUser(String user) {
     this.user = user;
+    this.preferences.put(USER_PREFERENCE, user);
   }
 
   String getPassword() {
-    return password;
+    return this.password;
   }
 
   void setPassword(String password) {
     this.password = password;
+    this.preferences.put(PASSWORD_PREFERENCE, password);
   }
 
   String getQuery() {
-    return query;
+    return this.query;
   }
 
   void setQuery(String query) {
@@ -51,7 +65,7 @@ final class SqlIdModel {
   }
 
   boolean isNativeSql() {
-    return nativeSql;
+    return this.nativeSql;
   }
 
   void setNativeSql(boolean nativeSql) {
@@ -82,8 +96,19 @@ final class SqlIdModel {
 
   }
 
+  void load() {
+    this.preferences = Preferences.userNodeForPackage(SqlIdModel.class);
+    this.url = this.preferences.get(URL_PREFERENCE, null);
+    this.user = this.preferences.get(USER_PREFERENCE, null);
+    this.password = this.preferences.get(PASSWORD_PREFERENCE, null);
+  }
+
+  void flush() throws BackingStoreException {
+    this.preferences.flush();
+  }
+
   private static boolean isEmpty(String s) {
-    return s == null || s.isEmpty();
+    return (s == null) || s.isEmpty();
   }
 
 }
