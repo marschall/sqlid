@@ -5,17 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 final class MD5HashTests {
 
-  static Stream<String> input() {
-    return IntStream.range(0, 128)
-                     .mapToObj(MD5HashTests::generateInput);
+  static List<String> input() {
+    int inputSize = 128;
+    StringBuilder buffer = new StringBuilder(inputSize);
+    List<String> input = new ArrayList<>(inputSize);
+    for (int i = 0; i < inputSize; i++) {
+      input.add(buffer.toString());
+      buffer.append((char) i);
+    }
+    input.add(buffer.toString());
+    return input;
   }
 
   @ParameterizedTest
@@ -28,23 +35,6 @@ final class MD5HashTests {
   @MethodSource("input")
   void hashEquals(String s) {
     assertEquals(OriginalSqlId.SQL_ID(s), SqlId.compute(s));
-  }
-
-  private static StringBuilder generateBuffer(int length) {
-    StringBuilder buffer = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      buffer.append((char) i);
-    }
-    return buffer;
-  }
-
-  private static String generateInput(int length) {
-    StringBuilder buffer = new StringBuilder();
-    for (int i = 0; i < length; i++) {
-      buffer.append((char) i);
-    }
-    // TODO avoid duplication
-    return buffer.toString();
   }
 
   private static long referenceMd5Hash(String s) {
