@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
@@ -87,7 +88,8 @@ public final class SqlIdGui {
   }
 
   void showException(Throwable exception) {
-    JOptionPane.showMessageDialog(this.frame, exception.getMessage(), "SQL Exception", JOptionPane.ERROR_MESSAGE);
+    String title = exception instanceof SQLException ? "SQL Exception" : "Exception";
+    JOptionPane.showMessageDialog(this.frame, exception.getMessage(), title, JOptionPane.ERROR_MESSAGE);
   }
 
   private void setNativeSql(boolean isNativeSql) {
